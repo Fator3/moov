@@ -1,0 +1,47 @@
+databaseChangeLog:
+
+- changeSet:
+    id: 1
+    author: guilherme
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              primaryKeyName: property_pk
+            name: id
+            type: bigint
+        - column:
+            name: street
+            type: VARCHAR(200)
+            constraints:
+                nullable: false
+        - column:
+            name: number
+            type: VARCHAR(10)
+            constraints:
+                nullable: false                
+        - column:
+            name: location
+            type: point
+            constraints:
+                nullable: false
+        - column:
+            name: reachable_range
+            type: geometry
+        - column:
+            name: active
+            type: tinyint
+            defaultValueComputed: 1
+        - column:
+            name: created_timestamp
+            type: timestamp
+            defaultValueComputed: NOW()
+        - column:
+            name: updated_timestamp
+            type: timestamp
+            defaultValueComputed: NOW() ON UPDATE NOW()
+        tableName: property
+
