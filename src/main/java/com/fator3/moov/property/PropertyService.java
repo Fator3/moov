@@ -18,45 +18,48 @@ import com.vividsolutions.jts.io.WKTReader;
 @Component
 public class PropertyService {
 
-    @Autowired
-    private PropertyRepository propertyRepository;
-    @Autowired
-    private TomtomClient tomtomClient;
-    
-    private WKTReader reader = new WKTReader();
+	@Autowired
+	private PropertyRepository propertyRepository;
+	@Autowired
+	private TomtomClient tomtomClient;
 
-    public void save(final PersistentProperty property) {
-        propertyRepository.save(property);
-    }
+	private WKTReader reader = new WKTReader();
 
-    public List<PersistentProperty> findWithin(final Point point) {
-        return propertyRepository.findWithin(point);
-    }
-    
-    public List<TimedLatLng> findDistanceInSeconds(final List<TimedLatLng> orderedReferences) {
-        final RouteResponse routeResponse = tomtomClient.getRoute(orderedReferences);
-        final List<Leg> legs = Iterables.getOnlyElement(routeResponse.getRoutes()).getLegs();
-        
-        for (int i = 1; i < orderedReferences.size(); i++) {
-            final TimedLatLng location = orderedReferences.get(i);
-            final Integer secondsToArrive = legs.get(i - 1).getSummary().getTravelTimeInSeconds();
-            location.setSecondsToArrive(secondsToArrive);
-        }
+	public void save(final PersistentProperty property) {
+		propertyRepository.save(property);
+	}
 
-        return orderedReferences;
-    }
+	public List<PersistentProperty> findAll() {
+		return propertyRepository.findAll();
+	}
 
-    public List<PersistentProperty> findWithinRange(final List<TimedLatLng> references) {
-        List<PersistentProperty> properties = propertyRepository.findAll();
+	public List<PersistentProperty> findWithin(final Point point) {
+		return propertyRepository.findWithin(point);
+	}
 
-        for (final TimedLatLng reference : references) {
-            final Point point = GeometryUtils.createPoint(reference.getLatitude(),
-                    reference.getLongitude(), reader);
-            properties = properties.stream().filter(p -> p.getReachableRange().contains(point))
-                    .collect(Collectors.toList());
-        }
+	public List<TimedLatLng> findDistanceInSeconds(final List<TimedLatLng> orderedReferences) {
+		final RouteResponse routeResponse = tomtomClient.getRoute(orderedReferences);
+		final List<Leg> legs = Iterables.getOnlyElement(routeResponse.getRoutes()).getLegs();
 
-        return properties;
-    }
+		for (int i = 1; i < orderedReferences.size(); i++) {
+			final TimedLatLng location = orderedReferences.get(i);
+			final Integer secondsToArrive = legs.get(i - 1).getSummary().getTravelTimeInSeconds();
+			location.setSecondsToArrive(secondsToArrive);
+		}
+
+		return orderedReferences;
+	}
+
+	public List<PersistentProperty> findWithinRange(final List<TimedLatLng> references) {
+		List<PersistentProperty> properties = propertyRepository.findAll();
+
+		for (final TimedLatLng reference : references) {
+			final Point point = GeometryUtils.createPoint(reference.getLatitude(), reference.getLongitude(), reader);
+			properties = properties.stream().filter(p -> p.getReachableRange() != null)
+					.filter(p -> p.getReachableRange().contains(point)).collect(Collectors.toList());
+		}
+
+		return properties;
+	}
 
 }

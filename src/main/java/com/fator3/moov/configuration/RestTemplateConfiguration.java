@@ -13,5 +13,5 @@ public class RestTemplateConfiguration {
         return builder.build();
 //        return builder.errorHandler(new RestTemplateResponseErrorHandler()).build();
     }
-
+    
 }

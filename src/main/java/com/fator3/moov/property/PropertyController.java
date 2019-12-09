@@ -14,17 +14,24 @@ import com.fator3.moov.models.TimedLatLng;
 @RequestMapping(path = "/moov/property")
 public class PropertyController {
 
-    @Autowired
-    private PropertyService propertyService;
+	@Autowired
+	private PropertyService propertyService;
 
-    @PostMapping("/filter")
-    public List<PersistentProperty> filter(@RequestBody final List<TimedLatLng> references) {
-        return propertyService.findWithinRange(references);
-    }
+	@PostMapping("/filter")
+	public List<PersistentProperty> filter(@RequestBody final List<TimedLatLng> references) {
+		List<PersistentProperty> x = propertyService.findWithinRange(references);
+		System.out.println(x.size());
+		return x;
+	}
 
-    @PostMapping("/time")
-    public List<TimedLatLng> distanceOfReferences(@RequestBody final List<TimedLatLng> references) {
-        return propertyService.findDistanceInSeconds(references);
-    }
+	@PostMapping("/time")
+	public List<TimedLatLng> distanceOfReferences(@RequestBody final List<TimedLatLng> references) {
+		return propertyService.findDistanceInSeconds(references);
+	}
+
+	@PostMapping("/all")
+	public List<PersistentProperty> distanceOfReferences() {
+		return propertyService.findAll();
+	}
 
 }
