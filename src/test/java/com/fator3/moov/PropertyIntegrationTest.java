@@ -11,7 +11,6 @@ import java.util.List;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.fator3.moov.clients.TomtomClient;
@@ -21,7 +20,6 @@ import com.fator3.moov.models.RouteResponse;
 import com.fator3.moov.models.Summary;
 import com.fator3.moov.models.TimedLatLng;
 import com.fator3.moov.property.PersistentProperty;
-import com.fator3.moov.property.PropertyService;
 
 import io.restassured.RestAssured;
 
@@ -32,8 +30,6 @@ public class PropertyIntegrationTest extends AbstractIntegrationTest {
     private TomtomClient tomtomClient;
     @Mock
     private RouteResponse routeResponse;
-    @Autowired
-    private PropertyService propertyService;
     @Mock
     private Route route;
     @Mock

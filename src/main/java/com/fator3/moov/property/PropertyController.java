@@ -32,4 +32,9 @@ public class PropertyController {
         return propertyService.findAll();
     }
 
+    @PostMapping("/test")
+    public void createPolygon() {
+        propertyService.saveTestPolygon();
+    }
+
 }

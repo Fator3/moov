@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,17 +45,14 @@ public class ClientIntegrationTest extends AbstractIntegrationTest {
 	private static final double ORIGIN_Y = -46.724252;
 
 	@Test
+	@Transactional
 	public void clientShouldConvertReachableToPolygonAndSave() {
 		final Point point = createPoint(ORIGIN_X, ORIGIN_Y);
 		final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point);
-
 		final List<LatLng> boundaries = reachableResponse.getReachableRange().getBoundary();
 		boundaries.add(boundaries.get(0));
 
 		final Polygon polygon = GeometryUtils.createPolygon(boundaries, reader);
-
-		System.out.println("BAFF");
-
 		final PersistentProperty property = PersistentProperty.of("Butantã", "number", point, polygon);
 
 		propertyService.save(property);
@@ -83,7 +82,6 @@ public class ClientIntegrationTest extends AbstractIntegrationTest {
 
 		for (int i = 1; i < locations.size(); i++) {
 			final Integer distanceSeconds = legs.get(i - i).getSummary().getTravelTimeInSeconds();
-			System.out.println(distanceSeconds);
 			assertThat(distanceSeconds).isGreaterThan(10);
 		}
 	}
