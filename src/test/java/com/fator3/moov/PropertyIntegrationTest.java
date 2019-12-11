@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.assertj.core.util.Lists;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -23,6 +24,7 @@ import com.fator3.moov.property.PersistentProperty;
 
 import io.restassured.RestAssured;
 
+@Ignore
 public class PropertyIntegrationTest extends AbstractIntegrationTest {
 
     private static final int TRAVEL_TIME = 10;

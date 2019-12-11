@@ -19,7 +19,9 @@ public class PropertyController {
 
     @PostMapping("/filter")
     public List<PersistentProperty> filter(@RequestBody final List<TimedLatLng> references) {
-        return propertyService.findWithinRange(references);
+        List<PersistentProperty> x = propertyService.findWithinRange(references);
+        System.out.println(x.size());
+        return x;
     }
 
     @PostMapping("/time")

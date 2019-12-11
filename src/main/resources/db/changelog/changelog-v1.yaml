@@ -20,14 +20,12 @@ databaseChangeLog:
                 nullable: false
         - column:
             name: number
-            type: VARCHAR(10)
+            type: VARCHAR(100)
             constraints:
                 nullable: false                
         - column:
             name: location
             type: point
-            constraints:
-                nullable: false
         - column:
             name: reachable_range
             type: geometry
@@ -45,3 +43,31 @@ databaseChangeLog:
             defaultValueComputed: NOW() ON UPDATE NOW()
         tableName: property
 
+- changeSet:
+    id: 2
+    author: guilherme
+    changes:
+    - insert:
+          columns:
+          - column:
+                name: id
+                valueNumeric: 2
+          - column:
+                name: street
+                value: Itaim Bibi
+          - column:
+                name: number
+                value: João Cachoeira 
+          tableName: property
+    - insert:
+          columns: 
+          - column:
+                name: id
+                valueNumeric: 3
+          - column:
+                name: street
+                value: Morumbi
+          - column:
+                name: number
+                value: José Yazigi
+          tableName: property
