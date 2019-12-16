@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.fator3.moov.models.GeolocationResponse;
 import com.fator3.moov.models.LatLng;
 import com.fator3.moov.models.ReachableRangeResponse;
 import com.fator3.moov.models.RouteResponse;
@@ -33,6 +34,61 @@ public class TomtomClient {
     private static final String KEY_PARAM = "&key=";
 
     private static final String ROUTE_URL = "https://api.tomtom.com/routing/1/calculateRoute/";
+
+    private static final String GEOLOCATION_URL = "https://api.tomtom.com/search/2/structuredGeocode.json?";
+    private static final String COUNTRY_CODE_PARAM = "countryCode=BR";
+    private static final String STREET_NUMBER_PARAM = "&streetNumber=";
+    private static final String MUNICIPALITY_PARAM = "&municipality=";
+    private static final String COUNTRY_SUBDIVISION_PARAM = "&countrySubdivision=";
+    private static final String POSTAL_CODE_PARAM = "&postalCode=";
+    
+    private static final String GEOLOCATION_URL2 = "https://api.tomtom.com/search/2/geocode/";
+    private static final String COUNTRY_SET_PARAM = ".json?countrySet=BR";
+
+    public GeolocationResponse getLatLng(final String reference) {
+        logger.info("Tomtom Api: getting route");
+        final boolean traffic = false;
+
+        final StringBuilder uri = new StringBuilder();
+        uri.append(GEOLOCATION_URL);
+        uri.append(COUNTRY_CODE_PARAM);
+        uri.append(STREET_NUMBER_PARAM);
+        uri.append("21");
+        uri.append(MUNICIPALITY_PARAM);
+        uri.append("Sao Paulo");
+        uri.append(COUNTRY_SUBDIVISION_PARAM);
+        uri.append("Sao Paulo");
+//        uri.append(POSTAL_CODE_PARAM);
+//        uri.append("05539020");
+        uri.append(KEY_PARAM);
+        uri.append(API_KEY);
+
+//        final ResponseEntity<String> result = restTemplate.getForEntity(uri.toString(),
+//                String.class);
+        final ResponseEntity<GeolocationResponse> result = restTemplate.getForEntity(uri.toString(),
+                GeolocationResponse.class);
+        logger.info("Tomtom Api: success request");
+
+        return result.getBody();
+    }
+    
+    public GeolocationResponse getLatLng2(final String reference) {
+        logger.info("Tomtom Api: getting route");
+        final boolean traffic = false;
+
+        final StringBuilder uri = new StringBuilder();
+        uri.append(GEOLOCATION_URL2);
+        uri.append(reference);
+        uri.append(COUNTRY_SET_PARAM);
+        uri.append(KEY_PARAM);
+        uri.append(API_KEY);
+
+        final ResponseEntity<GeolocationResponse> result = restTemplate.getForEntity(uri.toString(),
+                GeolocationResponse.class);
+        logger.info("Tomtom Api: success request");
+
+        return result.getBody();
+    }
 
     public ReachableRangeResponse getPolygonReachable(final Point location, final Integer minutes,
             final boolean traffic) {
@@ -75,7 +131,7 @@ public class TomtomClient {
         uri.append(traffic);
         uri.append(KEY_PARAM);
         uri.append(API_KEY);
-        
+
         final ResponseEntity<RouteResponse> result = restTemplate.getForEntity(uri.toString(),
                 RouteResponse.class);
         logger.info("Tomtom Api: success request");
