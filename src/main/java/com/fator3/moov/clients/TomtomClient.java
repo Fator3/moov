@@ -35,22 +35,21 @@ public class TomtomClient {
 
     private static final String ROUTE_URL = "https://api.tomtom.com/routing/1/calculateRoute/";
 
-    private static final String GEOLOCATION_URL = "https://api.tomtom.com/search/2/structuredGeocode.json?";
+    private static final String GEOLOCATION_SPECIFIC_URL = "https://api.tomtom.com/search/2/structuredGeocode.json?";
     private static final String COUNTRY_CODE_PARAM = "countryCode=BR";
     private static final String STREET_NUMBER_PARAM = "&streetNumber=";
     private static final String MUNICIPALITY_PARAM = "&municipality=";
     private static final String COUNTRY_SUBDIVISION_PARAM = "&countrySubdivision=";
     private static final String POSTAL_CODE_PARAM = "&postalCode=";
-    
-    private static final String GEOLOCATION_URL2 = "https://api.tomtom.com/search/2/geocode/";
+
+    private static final String GEOLOCATION_URL = "https://api.tomtom.com/search/2/geocode/";
     private static final String COUNTRY_SET_PARAM = ".json?countrySet=BR";
 
-    public GeolocationResponse getLatLng(final String reference) {
+    public GeolocationResponse getLatLngSpecificApi(final String reference) {
         logger.info("Tomtom Api: getting route");
-        final boolean traffic = false;
 
         final StringBuilder uri = new StringBuilder();
-        uri.append(GEOLOCATION_URL);
+        uri.append(GEOLOCATION_SPECIFIC_URL);
         uri.append(COUNTRY_CODE_PARAM);
         uri.append(STREET_NUMBER_PARAM);
         uri.append("21");
@@ -63,21 +62,18 @@ public class TomtomClient {
         uri.append(KEY_PARAM);
         uri.append(API_KEY);
 
-//        final ResponseEntity<String> result = restTemplate.getForEntity(uri.toString(),
-//                String.class);
         final ResponseEntity<GeolocationResponse> result = restTemplate.getForEntity(uri.toString(),
                 GeolocationResponse.class);
         logger.info("Tomtom Api: success request");
 
         return result.getBody();
     }
-    
-    public GeolocationResponse getLatLng2(final String reference) {
+
+    public GeolocationResponse getLatLng(final String reference) {
         logger.info("Tomtom Api: getting route");
-        final boolean traffic = false;
 
         final StringBuilder uri = new StringBuilder();
-        uri.append(GEOLOCATION_URL2);
+        uri.append(GEOLOCATION_URL);
         uri.append(reference);
         uri.append(COUNTRY_SET_PARAM);
         uri.append(KEY_PARAM);
@@ -138,9 +134,5 @@ public class TomtomClient {
 
         return result.getBody();
     }
-
-//    private String getApiKeyUrl() {
-//        return "?hapikey=" + API_KEY;
-//    }
 
 }

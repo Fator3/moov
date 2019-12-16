@@ -19,27 +19,14 @@ public class PropertyController {
     @Autowired
     private PropertyService propertyService;
 
-//    @PostMapping("/filter")
-//    public List<PersistentProperty> filter(@RequestBody final List<TimedLatLng> references) {
-//        List<PersistentProperty> x = propertyService.findWithinRange(references);
-//        System.out.println(x.size());
-//        return x;
-//    }
-
     @PostMapping("/filter")
-    public List<PersistentProperty> filter2(@RequestBody final List<String> references) {
-        List<PersistentProperty> x = propertyService.findWithinRange2(references);
-        return x;
+    public List<PersistentProperty> filter(@RequestBody final List<String> references) {
+        return propertyService.findWithinRange(references);
     }
 
-//    @PostMapping("/time")
-//    public List<TimedLatLng> distanceOfReferences(@RequestBody final List<TimedLatLng> references) {
-//        return propertyService.findDistanceInSeconds(references);
-//    }
-
     @PostMapping("/time")
-    public List<TimedLatLng> distanceOfReferences2(@RequestBody final RoutePost routePost) {
-        return propertyService.findDistanceInSeconds2(Lists.newArrayList(routePost.getProperty()),
+    public List<TimedLatLng> distanceOfReferences(@RequestBody final RoutePost routePost) {
+        return propertyService.findDistanceInSeconds(Lists.newArrayList(routePost.getProperty()),
                 routePost.getAddress());
     }
 

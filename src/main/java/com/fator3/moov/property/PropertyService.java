@@ -71,12 +71,12 @@ public class PropertyService {
         return orderedReferences;
     }
 
-    public List<TimedLatLng> findDistanceInSeconds2(List<TimedLatLng> orderedReferences,
+    public List<TimedLatLng> findDistanceInSeconds(List<TimedLatLng> orderedReferences,
             final String address) {
-        
+
         final TimedLatLng addressLocation = Iterables
                 .getOnlyElement(geolocationList(Collections.singletonList(address)));
-        
+
         orderedReferences.add(addressLocation);
         final RouteResponse routeResponse = tomtomClient.getRoute(orderedReferences);
         final List<Leg> legs = Iterables.getOnlyElement(routeResponse.getRoutes()).getLegs();
@@ -90,21 +90,7 @@ public class PropertyService {
         return orderedReferences;
     }
 
-    public List<PersistentProperty> findWithinRange(final List<TimedLatLng> references) {
-        List<PersistentProperty> properties = propertyRepository.findAll();
-
-        for (final TimedLatLng reference : references) {
-            final Point point = GeometryUtils.createPoint(reference.getLatitude(),
-                    reference.getLongitude(), reader);
-            properties = properties.stream().filter(p -> p.getReachableRange() != null)
-                    .filter(p -> p.getReachableRange().contains(point))
-                    .collect(Collectors.toList());
-        }
-
-        return properties;
-    }
-
-    public List<PersistentProperty> findWithinRange2(final List<String> references) {
+    public List<PersistentProperty> findWithinRange(final List<String> references) {
         List<PersistentProperty> properties = propertyRepository.findAll();
         final List<TimedLatLng> referencesLatLng = geolocationList(references);
 
@@ -122,7 +108,7 @@ public class PropertyService {
     public List<TimedLatLng> geolocationList(final List<String> references) {
         final List<TimedLatLng> results = Lists.newArrayList();
         for (String reference : references) {
-            final GeolocationResponse result = tomtomClient.getLatLng2(reference);
+            final GeolocationResponse result = tomtomClient.getLatLng(reference);
             final double latitude = result.getResults().get(0).getPosition().getLatitude();
             final double longitude = result.getResults().get(0).getPosition().getLongitude();
             results.add(TimedLatLng.of(latitude, longitude));
