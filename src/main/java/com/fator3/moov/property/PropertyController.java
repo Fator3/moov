@@ -1,8 +1,10 @@
 package com.fator3.moov.property;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +27,7 @@ public class PropertyController {
     }
 
     @PostMapping("/time")
-    public List<TimedLatLng> distanceOfReferences(@RequestBody final RoutePost routePost) {
+    public List<TimedLatLng> distanceOfReferences(@RequestBody final RoutePost routePost) throws InterruptedException {
         return propertyService.findDistanceInSeconds(Lists.newArrayList(routePost.getProperty()),
                 routePost.getAddress());
     }
@@ -35,9 +37,10 @@ public class PropertyController {
         return propertyService.findAll();
     }
 
-    @PostMapping("/test")
-    public void createPolygon() {
-        propertyService.saveTestPolygon();
+    @PostMapping("/test/{lat}/{lng}/{bairro}/{street}")
+    public void createPolygon(@PathVariable double lat, @PathVariable double lng,
+            @PathVariable String bairro, @PathVariable String street) {
+        propertyService.saveTestPolygon(lat, lng, bairro, street);
     }
 
 }

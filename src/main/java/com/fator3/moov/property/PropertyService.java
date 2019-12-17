@@ -45,15 +45,15 @@ public class PropertyService {
         return propertyRepository.findWithin(point);
     }
 
-    public void saveTestPolygon() {
-        final Point point = GeometryUtils.createPoint(ORIGIN_X, ORIGIN_Y, reader);
+    public void saveTestPolygon(final double lat, final double lng, final String bairro,
+            final String street) {
+        final Point point = GeometryUtils.createPoint(lat, lng, reader);
         final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point);
         final List<LatLng> boundaries = reachableResponse.getReachableRange().getBoundary();
         boundaries.add(boundaries.get(0));
 
         final Polygon polygon = GeometryUtils.createPolygon(boundaries, reader);
-        final PersistentProperty property = PersistentProperty.of("Butantã", "Augusto Perroni 21",
-                point, polygon);
+        final PersistentProperty property = PersistentProperty.of(bairro, street, point, polygon);
 
         save(property);
     }
