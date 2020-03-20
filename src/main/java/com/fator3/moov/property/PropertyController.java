@@ -1,7 +1,6 @@
 package com.fator3.moov.property;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fator3.moov.models.RoutePost;
+import com.fator3.moov.models.SearchParamsDTO;
 import com.fator3.moov.models.TimedLatLng;
 import com.google.common.collect.Lists;
 
@@ -22,8 +22,9 @@ public class PropertyController {
     private PropertyService propertyService;
 
     @PostMapping("/filter")
-    public List<PersistentProperty> filter(@RequestBody final List<String> references) {
-        return propertyService.findWithinRange(references);
+    public List<PersistentProperty> filter(@RequestBody final SearchParamsDTO searchParams) {
+    	
+        return propertyService.findWithinRange(searchParams);
     }
 
     @PostMapping("/time")

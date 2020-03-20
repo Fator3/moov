@@ -1,5 +1,7 @@
 package com.fator3.moov.clients;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -40,10 +42,10 @@ public class TomtomClient {
     private static final String STREET_NUMBER_PARAM = "&streetNumber=";
     private static final String MUNICIPALITY_PARAM = "&municipality=";
     private static final String COUNTRY_SUBDIVISION_PARAM = "&countrySubdivision=";
-    private static final String POSTAL_CODE_PARAM = "&postalCode=";
+//    private static final String POSTAL_CODE_PARAM = "&postalCode=";
 
-    private static final String GEOLOCATION_URL = "https://api.tomtom.com/search/2/geocode/";
-    private static final String COUNTRY_SET_PARAM = ".json?countrySet=BR";
+    private static final String GEOLOCATION_URL = "https://api.tomtom.com/search/2/search/";
+    private static final String COUNTRY_SET_PARAM = ".json?limit=1&maxFuzzyLevel=2&countrySet=BR";
 
     public GeolocationResponse getLatLngSpecificApi(final String reference) {
         logger.info("Tomtom Api: getting route");
@@ -79,7 +81,7 @@ public class TomtomClient {
         uri.append(KEY_PARAM);
         uri.append(API_KEY);
 
-        final ResponseEntity<GeolocationResponse> result = restTemplate.getForEntity(uri.toString(),
+        final ResponseEntity<GeolocationResponse> result = restTemplate.getForEntity(encodeURIComponent(uri.toString()),
                 GeolocationResponse.class);
         logger.info("Tomtom Api: success request");
 
@@ -108,13 +110,13 @@ public class TomtomClient {
         return result.getBody();
     }
 
-    public ReachableRangeResponse getPolygonReachable(final Point location) {
-        return getPolygonReachable(location, 15, false);
+    public ReachableRangeResponse getPolygonReachable(final Point location, final Integer minutes) {
+        return getPolygonReachable(location, minutes, true);
     }
 
     public RouteResponse getRoute(final List<TimedLatLng> locations) {
         logger.info("Tomtom Api: getting route");
-        final boolean traffic = false;
+        final boolean traffic = true;
 
         final StringBuilder uri = new StringBuilder();
         uri.append(ROUTE_URL);
@@ -128,11 +130,25 @@ public class TomtomClient {
         uri.append(KEY_PARAM);
         uri.append(API_KEY);
 
-        final ResponseEntity<RouteResponse> result = restTemplate.getForEntity(uri.toString(),
+        final ResponseEntity<RouteResponse> result = restTemplate.getForEntity(encodeURIComponent(uri.toString()),
                 RouteResponse.class);
         logger.info("Tomtom Api: success request");
 
         return result.getBody();
     }
 
+    public static String encodeURIComponent(String s) {
+        String result;
+
+            result = s
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("\\%21", "!")
+                    .replaceAll("\\%27", "'")
+                    .replaceAll("\\%28", "(")
+                    .replaceAll("\\%29", ")")
+                    .replaceAll("\\%7E", "~");
+        
+
+        return result;
+    }
 }

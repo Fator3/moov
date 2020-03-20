@@ -14,6 +14,7 @@ import com.fator3.moov.models.LatLng;
 import com.fator3.moov.models.Leg;
 import com.fator3.moov.models.ReachableRangeResponse;
 import com.fator3.moov.models.RouteResponse;
+import com.fator3.moov.models.SearchParamsDTO;
 import com.fator3.moov.models.TimedLatLng;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -24,8 +25,6 @@ import com.vividsolutions.jts.io.WKTReader;
 @Component
 public class PropertyService {
 
-    private static final double ORIGIN_X = -23.573588;
-    private static final double ORIGIN_Y = -46.724252;
     @Autowired
     private PropertyRepository propertyRepository;
     @Autowired
@@ -48,7 +47,7 @@ public class PropertyService {
     public void saveTestPolygon(final double lat, final double lng, final String bairro,
             final String street) {
         final Point point = GeometryUtils.createPoint(lat, lng, reader);
-        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point);
+        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, 15);
         final List<LatLng> boundaries = reachableResponse.getReachableRange().getBoundary();
         boundaries.add(boundaries.get(0));
 
@@ -78,6 +77,7 @@ public class PropertyService {
                 .getOnlyElement(geolocationList(Collections.singletonList(address)));
 
         orderedReferences.add(addressLocation);
+        orderedReferences = Lists.reverse(orderedReferences);
         final RouteResponse routeResponse = tomtomClient.getRoute(orderedReferences);
         final List<Leg> legs = Iterables.getOnlyElement(routeResponse.getRoutes()).getLegs();
 
@@ -90,18 +90,29 @@ public class PropertyService {
         return orderedReferences;
     }
 
-    public List<PersistentProperty> findWithinRange(final List<String> references) {
+    public List<PersistentProperty> findWithinRange(final SearchParamsDTO searchParams) {
+    	List<String> references = searchParams.getReferences();
+    	List<Integer> referencesMinutes = searchParams.getReferencesMinutes();
         List<PersistentProperty> properties = propertyRepository.findAll();
         final List<TimedLatLng> referencesLatLng = geolocationList(references);
+        
+        
+        for(int i = 0 ; i< referencesLatLng.size(); i++){
+        	TimedLatLng t = referencesLatLng.get(i);
+        	Integer minutes = referencesMinutes.get(i);
+            Point point = GeometryUtils.createPoint(t.getLatitude(), t.getLongitude(), reader);
+            ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, minutes);
+            
+            List<LatLng> boundaries = reachableResponse.getReachableRange().getBoundary();
+            boundaries.add(boundaries.get(0));
 
-        for (final TimedLatLng reference : referencesLatLng) {
-            final Point point = GeometryUtils.createPoint(reference.getLatitude(),
-                    reference.getLongitude(), reader);
-            properties = properties.stream().filter(p -> p.getReachableRange() != null)
-                    .filter(p -> p.getReachableRange().contains(point))
+            Polygon polygon = GeometryUtils.createPolygon(boundaries, reader);
+
+            
+            properties = properties.stream().filter(p -> p.getLocation() != null)
+                    .filter(p -> polygon.contains(p.getLocation()))
                     .collect(Collectors.toList());
         }
-
         return properties;
     }
 

@@ -50,7 +50,7 @@ public class ClientIntegrationTest extends AbstractIntegrationTest {
     @Transactional
     public void clientShouldConvertReachableToPolygonAndSave() {
         final Point point = createPoint(ORIGIN_X, ORIGIN_Y);
-        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point);
+        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, 15);
         final List<LatLng> boundaries = reachableResponse.getReachableRange().getBoundary();
         boundaries.add(boundaries.get(0));
 
@@ -66,7 +66,7 @@ public class ClientIntegrationTest extends AbstractIntegrationTest {
         final Point point = createPoint(FIRST_LATITUDE, FIRST_LONGITUDE);
         final LatLng expectedCenter = LatLng.of(FIRST_LATITUDE, FIRST_LONGITUDE_ADJUSTED);
         final Integer expectedBoundarySize = 50;
-        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point);
+        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, 15);
 
         assertThat(reachableResponse.getReachableRange().getCenter()).isEqualTo(expectedCenter);
         assertThat(reachableResponse.getReachableRange().getBoundary().size())
