@@ -1,8 +1,8 @@
 databaseChangeLog:
 
 - changeSet:
-    id: 1
-    author: guilherme
+    id: 1 - create property table
+    author: rafael
     changes:
     - createTable:
         columns:
@@ -14,21 +14,77 @@ databaseChangeLog:
             name: id
             type: bigint
         - column:
-            name: street
-            type: VARCHAR(200)
-            constraints:
-                nullable: false
+            name: status
+            type: varchar(100)
+        - column:
+            name: agency_reference
+            type: varchar(50)
+        - column:
+            name: type
+            type: varchar(50)
+        - column:
+            name: purpose
+            type: varchar(50)
+        - column:
+            name: address
+            type: varchar(500)
+        - column:
+            name: complement
+            type: varchar(50)
+        - column:
+            name: district
+            type: varchar(50)
+        - column:
+            name: complex
+            type: varchar(100)
+        - column:
+            name: city
+            type: varchar(100)     
+        - column:
+            name: sell_price
+            type: decimal(20,2) 
+        - column:
+            name: rental_price
+            type: decimal(20,2) 
+        - column:
+            name: complex_fee
+            type: decimal(20,2)  
+        - column:
+            name: property_tax
+            type: decimal(20,2)  
+        - column:
+            name: bedrooms
+            type: tinyint
+        - column:
+            name: suites
+            type: tinyint
+        - column:
+            name: parking_spaces
+            type: tinyint         
+        - column:
+            name: date_added
+            type: date
+        - column:
+            name: total_area
+            type: decimal(10,2)  
+        - column:
+            name: area
+            type: decimal(10,2)  
         - column:
             name: number
-            type: VARCHAR(100)
-            constraints:
-                nullable: false                
+            type: varchar(50)    
         - column:
-            name: location
-            type: point
+            name: full_address
+            type: text      
         - column:
-            name: reachable_range
-            type: geometry
+            name: agency
+            type: varchar(255)  
+        - column:
+            name: latitude
+            type: decimal(13,10)    
+        - column:
+            name: longitude
+            type: decimal(13,10)                                                                                                         
         - column:
             name: active
             type: tinyint
@@ -44,30 +100,85 @@ databaseChangeLog:
         tableName: property
 
 - changeSet:
-    id: 2
-    author: guilherme
-    changes:
-    - insert:
-          columns:
-          - column:
-                name: id
-                valueNumeric: 2
-          - column:
-                name: street
-                value: Itaim Bibi
-          - column:
-                name: number
-                value: João Cachoeira 
-          tableName: property
-    - insert:
-          columns: 
-          - column:
-                name: id
-                valueNumeric: 3
-          - column:
-                name: street
-                value: Morumbi
-          - column:
-                name: number
-                value: José Yazigi
-          tableName: property
+      id: 2 - load properties
+      author: Rafael
+      changes:
+        - loadData:
+            tableName: property
+            file: imoveis.csv
+            separator: ';'
+            relativeToChangelogFile: true
+            encoding: Windows-1252
+            columns:
+              - column:
+                  name: status
+                  type: string
+              - column:
+                  name: agency_reference
+                  type: string
+              - column:
+                  name: type
+                  type: string
+              - column:
+                  name: purpose
+                  type: string
+              - column:
+                  name: address
+                  type: string
+              - column:
+                  name: complement
+                  type: string
+              - column:
+                  name: district
+                  type: string
+              - column:
+                  name: complex
+                  type: string
+              - column:
+                  name: city
+                  type: string     
+              - column:
+                  name: sell_price
+                  type: numeric 
+              - column:
+                  name: rental_price
+                  type: numeric 
+              - column:
+                  name: complex_fee
+                  type: numeric  
+              - column:
+                  name: property_tax
+                  type: numeric  
+              - column:
+                  name: bedrooms
+                  type: numeric
+              - column:
+                  name: suites
+                  type: numeric
+              - column:
+                  name: parking_spaces
+                  type: numeric         
+              - column:
+                  name: date_added
+                  type: date
+              - column:
+                  name: total_area
+                  type: numeric  
+              - column:
+                  name: area
+                  type: numeric  
+              - column:
+                  name: number
+                  type: string    
+              - column:
+                  name: full_address
+                  type: string      
+              - column:
+                  name: agency
+                  type: string
+              - column:
+                  name: latitude
+                  type: numeric
+              - column:
+                  name: longitude
+                  type: numeric

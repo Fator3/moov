@@ -38,6 +38,6 @@ dependencies {
 
 jar {
     manifest { 
-        attributes('Main-Class': 'com.fator3.moov.MoovApplication') 
+        attributes('Main-Class': 'com.fator3.nudoor.nudoorApplication') 
     }
 }
