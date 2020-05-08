@@ -11,9 +11,9 @@ import com.fator3.nudoor.property.PropertyPackageScan;
 @SpringBootApplication(scanBasePackageClasses = { ConfigurationPackageScan.class,
         PropertyPackageScan.class, ClientPackageScan.class })
 @RestController
-public class NudoorApplication {
+public class NuDoorApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(NudoorApplication.class, args);
+        SpringApplication.run(NuDoorApplication.class, args);
     }
 }
