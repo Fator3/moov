@@ -28,9 +28,11 @@ public class TomtomClient {
     private String API_KEY;
 
     private static final String REACHABLE_RANGE_URL = "https://api.tomtom.com/routing/1/calculateReachableRange/";
-    private static final String BASE_PARAMS = "/json?routeType=fastest&travelMode=car&vehicleMaxSpeed=100&vehicleCommercial=false";
+    private static final String BASE_PARAMS = "/json?routeType=fastest";
     private static final String SECONDS_PARAM = "&timeBudgetInSec=";
     private static final String TRAFFIC_PARAM = "&traffic=";
+    private static final String TRANSPORT_PARAM = "&travelMode=";
+    
     private static final String KEY_PARAM = "&key=";
 
     private static final String ROUTE_URL = "https://api.tomtom.com/routing/1/calculateRoute/";
@@ -87,7 +89,7 @@ public class TomtomClient {
     }
 
     public ReachableRangeResponse getPolygonReachable(final Point location, final Integer minutes,
-            final boolean traffic) {
+            final boolean traffic, final String transport) {
         logger.info("Tomtom Api: getting reachable range");
 
         final StringBuilder uri = new StringBuilder();
@@ -98,6 +100,8 @@ public class TomtomClient {
         uri.append(minutes * 60);
         uri.append(TRAFFIC_PARAM);
         uri.append(traffic);
+        uri.append(TRANSPORT_PARAM);
+        uri.append(transport);
         uri.append(KEY_PARAM);
         uri.append(API_KEY);
 
@@ -108,11 +112,11 @@ public class TomtomClient {
         return result.getBody();
     }
 
-    public ReachableRangeResponse getPolygonReachable(final Point location, final Integer minutes) {
-        return getPolygonReachable(location, minutes, true);
+    public ReachableRangeResponse getPolygonReachable(final Point location, final Integer minutes, final String transport) {
+        return getPolygonReachable(location, minutes, true, transport);
     }
 
-    public RouteResponse getRoute(final List<TimedLatLng> locations) {
+    public RouteResponse getRoute(final List<TimedLatLng> locations, final String transport) {
         logger.info("Tomtom Api: getting route");
         final boolean traffic = true;
 
@@ -125,6 +129,8 @@ public class TomtomClient {
         uri.append(BASE_PARAMS);
         uri.append(TRAFFIC_PARAM);
         uri.append(traffic);
+        uri.append(TRANSPORT_PARAM);
+        uri.append(transport);
         uri.append(KEY_PARAM);
         uri.append(API_KEY);
 

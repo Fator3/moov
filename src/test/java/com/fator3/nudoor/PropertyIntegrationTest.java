@@ -71,7 +71,7 @@ public class PropertyIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void distanceOfReferencesShouldReturnSecondsToArriveExceptForOrigin() {
-        when(tomtomClient.getRoute(any())).thenReturn(routeResponse);
+        when(tomtomClient.getRoute(any(), "car")).thenReturn(routeResponse);
         when(routeResponse.getRoutes()).thenReturn(Collections.singletonList(route));
         when(route.getLegs()).thenReturn(Collections.singletonList(leg));
         when(leg.getSummary()).thenReturn(summary);
