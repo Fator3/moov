@@ -4,36 +4,33 @@ import java.util.List;
 
 public class SearchParamsDTO {
 
-    private Integer rooms;
-    private Double value;
-    private List<String> references;
-    private List<Integer> referencesMinutes;
+    private Boolean isRent;
+    private String type;
+    private String city;
+    private List<ReferenceDTO> references;
     
-	public Integer getRooms() {
-		return rooms;
+	public Boolean getIsRent() {
+		return isRent;
 	}
-	public void setRooms(Integer rooms) {
-		this.rooms = rooms;
+	public void setIsRent(Boolean isRent) {
+		this.isRent = isRent;
 	}
-	public Double getValue() {
-		return value;
+	public String getType() {
+		return type;
 	}
-	public void setValue(Double value) {
-		this.value = value;
+	public void setType(String type) {
+		this.type = type;
 	}
-	public List<String> getReferences() {
+	public String getCity() {
+		return city;
+	}
+	public void setCity(String city) {
+		this.city = city;
+	}
+	public List<ReferenceDTO> getReferences() {
 		return references;
 	}
-	public void setReferences(List<String> references) {
+	public void setReferences(List<ReferenceDTO> references) {
 		this.references = references;
 	}
-	public List<Integer> getReferencesMinutes() {
-		return referencesMinutes;
-	}
-	public void setReferencesMinutes(List<Integer> referencesMinutes) {
-		this.referencesMinutes = referencesMinutes;
-	}
-
-    
-
 }

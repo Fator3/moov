@@ -44,7 +44,7 @@ public class ClientIntegrationTest extends AbstractIntegrationTest {
         final Point point = createPoint(FIRST_LATITUDE, FIRST_LONGITUDE);
         final LatLng expectedCenter = LatLng.of(FIRST_LATITUDE, FIRST_LONGITUDE_ADJUSTED);
         final Integer expectedBoundarySize = 50;
-        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, 15);
+        final ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, 15, "car");
 
         assertThat(reachableResponse.getReachableRange().getCenter()).isEqualTo(expectedCenter);
         assertThat(reachableResponse.getReachableRange().getBoundary().size())
@@ -58,7 +58,7 @@ public class ClientIntegrationTest extends AbstractIntegrationTest {
         final List<TimedLatLng> locations = Lists.newArrayList(TimedLatLng.of(first),
                 TimedLatLng.of(second), TimedLatLng.of(first));
 
-        final RouteResponse routeResponse = tomtomClient.getRoute(locations);
+        final RouteResponse routeResponse = tomtomClient.getRoute(locations, "car");
         final List<Leg> legs = Iterables.getOnlyElement(routeResponse.getRoutes()).getLegs();
         assertThat(legs.size()).isEqualTo(2);
 

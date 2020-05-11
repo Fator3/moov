@@ -29,7 +29,7 @@ public class PropertyServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void clientShouldReturnRouteWithRightLegsQuantityAndDistanceInSeconds() {
         final List<TimedLatLng> responseLocations = propertyService
-                .findDistanceInSeconds(makeOrderedReferences());
+                .findDistanceInSeconds(makeOrderedReferences(), "car");
         for (TimedLatLng latLng : responseLocations) {
             assertThat(latLng.getSecondsToArrive()).isGreaterThan(600); 
         }

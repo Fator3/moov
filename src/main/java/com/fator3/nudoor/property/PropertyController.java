@@ -31,7 +31,7 @@ public class PropertyController {
     @PostMapping("/time")
     public List<TimedLatLng> distanceOfReferences(@RequestBody final RoutePost routePost) throws InterruptedException {
         return propertyService.findDistanceInSeconds(Lists.newArrayList(routePost.getProperty()),
-                routePost.getAddress());
+                routePost.getAddress(), routePost.getTransport());
     }
 
     @PostMapping("/all")
