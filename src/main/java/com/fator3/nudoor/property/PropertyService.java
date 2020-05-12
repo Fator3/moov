@@ -5,15 +5,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import com.fator3.nudoor.clients.TomtomClient;
 import com.fator3.nudoor.geometry.GeometryUtils;
 import com.fator3.nudoor.models.GeolocationResponse;
 import com.fator3.nudoor.models.LatLng;
+import com.fator3.nudoor.models.LeadMessageDTO;
 import com.fator3.nudoor.models.Leg;
 import com.fator3.nudoor.models.ReachableRangeResponse;
 import com.fator3.nudoor.models.ReferenceDTO;
+import com.fator3.nudoor.models.ResponseDTO;
 import com.fator3.nudoor.models.RouteResponse;
 import com.fator3.nudoor.models.SearchParamsDTO;
 import com.fator3.nudoor.models.TimedLatLng;
@@ -30,7 +36,13 @@ public class PropertyService {
 	private PropertyRepository propertyRepository;
 	@Autowired
 	private TomtomClient tomtomClient;
+	@Autowired
+    public JavaMailSender emailSender;
 
+	@Value("${spring.mail.username}")
+    private String nudoorAddress;
+	
+	
 	private WKTReader reader = new WKTReader();
 
 	private final static String[] homeTypes = {
@@ -136,4 +148,25 @@ public class PropertyService {
 		return propertyRepository.listNRandom(limit);
 	}
 
+	public ResponseDTO sendEmail(final LeadMessageDTO leadMessage) {
+		SimpleMailMessage message = new SimpleMailMessage(); 
+		message.setFrom(nudoorAddress);
+        message.setTo(nudoorAddress); 
+        message.setSubject("[NuDoor] Novo lead");
+        
+        String text = "Nome: "+leadMessage.getName() + 
+        		         "\nEmail: "+leadMessage.getEmail() +
+        		         "\nTelefone: "+leadMessage.getPhone() +
+        		         "\n\n\nMensagem:\n\n"+leadMessage.getMessage();
+        
+        message.setText(text);
+        try {
+        	emailSender.send(message);
+        }catch (MailException e) {
+        	System.out.println(e);
+        	return ResponseDTO.of("Erro ao enviar o email! Tente novamente mais tarde.", 500);
+        }
+        
+        return ResponseDTO.of("Email enviado com sucesso!", 200);
+	}
 }
