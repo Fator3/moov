@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fator3.nudoor.models.LeadMessageDTO;
+import com.fator3.nudoor.models.ResponseDTO;
 import com.fator3.nudoor.models.RoutePost;
 import com.fator3.nudoor.models.SearchParamsDTO;
 import com.fator3.nudoor.models.TimedLatLng;
@@ -42,5 +44,10 @@ public class PropertyController {
     @GetMapping("/random/{limit}")
     public List<Property> listNRandom(@PathVariable("limit") Integer limit){
     	return propertyService.listNRandom(limit);
+    }
+    
+    @PostMapping("/message")
+    public ResponseDTO distanceOfReferences(@RequestBody final LeadMessageDTO leadMessage){
+        return propertyService.sendEmail(leadMessage);
     }
 }
