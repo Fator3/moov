@@ -100,7 +100,11 @@ public class PropertyService {
 	}
 
 	public List<Property> findWithinRange(final SearchParamsDTO searchParams) {
-		List<Property> properties = propertyRepository.findAll();
+		List<Property> properties = propertyRepository.findAll()
+				.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
+				.filter(p -> searchParams.getCity() == null || searchParams.getCity().isEmpty() || p.getCity().equals(searchParams.getCity().split(" - ")[0]))
+				.filter(p -> searchParams.getType() == null  || searchParams.getType().isEmpty() || isPropertyType(p, searchParams.getType()))
+				.collect(Collectors.toList());;
 
 		for (ReferenceDTO reference : searchParams.getReferences()) {
 			TimedLatLng t = getReferenceLatLong(reference.getAddress());
@@ -114,12 +118,10 @@ public class PropertyService {
 
 			Polygon polygon = GeometryUtils.createPolygon(boundaries, reader);
 
-			properties = properties.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
-					.filter(p -> searchParams.getCity() == null || searchParams.getCity().isEmpty() || p.getCity().equals(searchParams.getCity().split(" - ")[0]))
-					.filter(p -> polygon.contains(GeometryUtils.createPoint(p.getLatitude().doubleValue(),
-							p.getLongitude().doubleValue(), reader)))
-					.filter(p -> isPropertyType(p, searchParams.getType()))
-					.collect(Collectors.toList());
+			properties = properties.stream()
+						.filter(p -> polygon.contains(GeometryUtils.createPoint(p.getLatitude().doubleValue(),
+								p.getLongitude().doubleValue(), reader)))
+						.collect(Collectors.toList());
 		}
 		return properties;
 	}
