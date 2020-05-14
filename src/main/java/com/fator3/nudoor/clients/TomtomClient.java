@@ -1,6 +1,7 @@
 package com.fator3.nudoor.clients;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,13 +21,33 @@ import com.vividsolutions.jts.geom.Point;
 @Component
 public class TomtomClient {
 
-    final Logger logger = LoggerFactory.getLogger(TomtomClient.class);
+    static final Logger logger = LoggerFactory.getLogger(TomtomClient.class);
 
     @Autowired
     private RestTemplate restTemplate;
-    @Value("${fator3.nudoor.tomtom.key}")
-    private String API_KEY;
+    private static String[] API_KEYS;
+    
+    @Value("${fator3.nudoor.tomtom.keys}")
+    private void setAPI_KEYS(String[] keys) {
+    	API_KEYS = keys;
+    }
 
+    private static AtomicInteger currentKeyIndex = new AtomicInteger();
+    private static AtomicInteger requestCount = new AtomicInteger();
+    private static final int DAILY_REQUEST_MAX = 2500;
+    
+    private static String getAPIKey() {
+    	logger.info("Tomtom Api: getting API KEY");
+    	if(requestCount.get() == DAILY_REQUEST_MAX) {
+    		logger.info("Tomtom Api: changing API KEY");
+    		currentKeyIndex = new AtomicInteger(currentKeyIndex.incrementAndGet() % API_KEYS.length);
+    		requestCount = new AtomicInteger();
+    	}
+    	requestCount.incrementAndGet();
+    	logger.info("Tomtom Api: request "+requestCount.get() + " | index "+currentKeyIndex.get() + " | key "+ API_KEYS[currentKeyIndex.get()]);
+    	return API_KEYS[currentKeyIndex.get()];
+    }
+    
     private static final String REACHABLE_RANGE_URL = "https://api.tomtom.com/routing/1/calculateReachableRange/";
     private static final String BASE_PARAMS = "/json?routeType=fastest";
     private static final String SECONDS_PARAM = "&timeBudgetInSec=";
@@ -62,7 +83,7 @@ public class TomtomClient {
 //        uri.append(POSTAL_CODE_PARAM);
 //        uri.append("05539020");
         uri.append(KEY_PARAM);
-        uri.append(API_KEY);
+        uri.append(getAPIKey());
 
         final ResponseEntity<GeolocationResponse> result = restTemplate.getForEntity(uri.toString(),
                 GeolocationResponse.class);
@@ -79,7 +100,7 @@ public class TomtomClient {
         uri.append(reference);
         uri.append(COUNTRY_SET_PARAM);
         uri.append(KEY_PARAM);
-        uri.append(API_KEY);
+        uri.append(getAPIKey());
 
         final ResponseEntity<GeolocationResponse> result = restTemplate.getForEntity(encodeURIComponent(uri.toString()),
                 GeolocationResponse.class);
@@ -103,7 +124,7 @@ public class TomtomClient {
         uri.append(TRANSPORT_PARAM);
         uri.append(transport);
         uri.append(KEY_PARAM);
-        uri.append(API_KEY);
+        uri.append(getAPIKey());
 
         final ResponseEntity<ReachableRangeResponse> result = restTemplate
                 .getForEntity(uri.toString(), ReachableRangeResponse.class);
@@ -132,7 +153,7 @@ public class TomtomClient {
         uri.append(TRANSPORT_PARAM);
         uri.append(transport);
         uri.append(KEY_PARAM);
-        uri.append(API_KEY);
+        uri.append(getAPIKey());
 
         final ResponseEntity<RouteResponse> result = restTemplate.getForEntity(encodeURIComponent(uri.toString()),
                 RouteResponse.class);
