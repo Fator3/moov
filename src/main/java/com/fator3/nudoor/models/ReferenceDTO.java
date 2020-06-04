@@ -5,7 +5,14 @@ public class ReferenceDTO {
     private String address;
     private Integer time;
     private String transport;
+    private TimedLatLng latLon;
     
+	public TimedLatLng getLatLon() {
+		return latLon;
+	}
+	public void setLatLon(TimedLatLng latLon) {
+		this.latLon = latLon;
+	}
 	public String getAddress() {
 		return address;
 	}

@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fator3.nudoor.models.LeadMessageDTO;
+import com.fator3.nudoor.models.ReferenceDTO;
 import com.fator3.nudoor.models.ResponseDTO;
 import com.fator3.nudoor.models.RoutePost;
 import com.fator3.nudoor.models.SearchParamsDTO;
+import com.fator3.nudoor.models.SearchResponseDTO;
 import com.fator3.nudoor.models.TimedLatLng;
 import com.google.common.collect.Lists;
 
@@ -25,7 +27,7 @@ public class PropertyController {
     private PropertyService propertyService;
 
     @PostMapping("/filter")
-    public List<Property> filter(@RequestBody final SearchParamsDTO searchParams) {
+    public SearchResponseDTO filter(@RequestBody final SearchParamsDTO searchParams) {
     	
         return propertyService.findWithinRange(searchParams);
     }
@@ -33,7 +35,7 @@ public class PropertyController {
     @PostMapping("/time")
     public List<TimedLatLng> distanceOfReferences(@RequestBody final RoutePost routePost) throws InterruptedException {
         return propertyService.findDistanceInSeconds(Lists.newArrayList(routePost.getProperty()),
-                routePost.getAddress(), routePost.getTransport());
+                routePost.getAddress(), routePost.getTransport(), routePost.getReference());
     }
 
     @PostMapping("/all")

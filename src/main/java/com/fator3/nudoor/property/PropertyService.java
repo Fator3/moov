@@ -22,6 +22,7 @@ import com.fator3.nudoor.models.ReferenceDTO;
 import com.fator3.nudoor.models.ResponseDTO;
 import com.fator3.nudoor.models.RouteResponse;
 import com.fator3.nudoor.models.SearchParamsDTO;
+import com.fator3.nudoor.models.SearchResponseDTO;
 import com.fator3.nudoor.models.TimedLatLng;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -41,7 +42,6 @@ public class PropertyService {
 
 	@Value("${spring.mail.username}")
     private String nudoorAddress;
-	
 	
 	private WKTReader reader = new WKTReader();
 
@@ -81,11 +81,21 @@ public class PropertyService {
 	}
 
 	public List<TimedLatLng> findDistanceInSeconds(List<TimedLatLng> orderedReferences, final String address,
-			final String transport) {
+			final String transport, final TimedLatLng reference) {
 
-		final TimedLatLng addressLocation = getReferenceLatLong(address);
+		// address é o endereço do ponto de referência.
+		// os tempos são calculados a partir dele.
+		// abaixo, após obter a (lat,lng) do endereço, o ponto
+		// é adicionado na lista orderedReferences e a ordem é revertida
+		// para que o primeiro item seja o ponto de referência em relação
+		// a quem se calcula o tempo.
+				
+		// FALTA PEGAR ESSA LAT E LONG VINDOS DO FRONT PARA CALCULAR AS ROTAS
+				
+		final TimedLatLng addressLocation = reference; //getReferenceLatLong(address); // essa chamada pode ser eliminada usando 
+																		// os pontos já calculados pela chamado de findWithinRange
 
-		orderedReferences.add(addressLocation);
+		orderedReferences.add(addressLocation); 
 		orderedReferences = Lists.reverse(orderedReferences);
 		final RouteResponse routeResponse = tomtomClient.getRoute(orderedReferences, transport);
 		final List<Leg> legs = Iterables.getOnlyElement(routeResponse.getRoutes()).getLegs();
@@ -99,15 +109,18 @@ public class PropertyService {
 		return orderedReferences;
 	}
 
-	public List<Property> findWithinRange(final SearchParamsDTO searchParams) {
+	public SearchResponseDTO findWithinRange(final SearchParamsDTO searchParams) {
 		List<Property> properties = propertyRepository.findAll()
 				.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
 				.filter(p -> searchParams.getCity() == null || searchParams.getCity().isEmpty() || p.getCity().equals(searchParams.getCity().split(" - ")[0]))
 				.filter(p -> searchParams.getType() == null  || searchParams.getType().isEmpty() || isPropertyType(p, searchParams.getType()))
-				.collect(Collectors.toList());;
-
+				.collect(Collectors.toList());
+		
+		int index = 0;
+		
 		for (ReferenceDTO reference : searchParams.getReferences()) {
 			TimedLatLng t = getReferenceLatLong(reference.getAddress());
+			searchParams.getReferences().get(index).setLatLon(t);
 
 			Point point = GeometryUtils.createPoint(t.getLatitude(), t.getLongitude(), reader);
 			ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, reference.getTime(),
@@ -122,8 +135,11 @@ public class PropertyService {
 						.filter(p -> polygon.contains(GeometryUtils.createPoint(p.getLatitude().doubleValue(),
 								p.getLongitude().doubleValue(), reader)))
 						.collect(Collectors.toList());
+			index++;
 		}
-		return properties;
+		
+		return new SearchResponseDTO(searchParams.getReferences(), properties);
+	
 	}
 
 	private boolean isPropertyType(Property property, String type) {
