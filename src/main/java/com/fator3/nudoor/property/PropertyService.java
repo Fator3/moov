@@ -82,19 +82,8 @@ public class PropertyService {
 
 	public List<TimedLatLng> findDistanceInSeconds(List<TimedLatLng> orderedReferences, final String address,
 			final String transport, final TimedLatLng reference) {
-
-		// address é o endereço do ponto de referência.
-		// os tempos são calculados a partir dele.
-		// abaixo, após obter a (lat,lng) do endereço, o ponto
-		// é adicionado na lista orderedReferences e a ordem é revertida
-		// para que o primeiro item seja o ponto de referência em relação
-		// a quem se calcula o tempo.
 				
-		// FALTA PEGAR ESSA LAT E LONG VINDOS DO FRONT PARA CALCULAR AS ROTAS
-				
-		final TimedLatLng addressLocation = reference; //getReferenceLatLong(address); // essa chamada pode ser eliminada usando 
-																		// os pontos já calculados pela chamado de findWithinRange
-
+		final TimedLatLng addressLocation = reference; 
 		orderedReferences.add(addressLocation); 
 		orderedReferences = Lists.reverse(orderedReferences);
 		final RouteResponse routeResponse = tomtomClient.getRoute(orderedReferences, transport);
