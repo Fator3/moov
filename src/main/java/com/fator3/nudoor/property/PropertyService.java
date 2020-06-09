@@ -39,8 +39,8 @@ public class PropertyService {
 	private TomtomClient tomtomClient;
 	@Autowired
     public JavaMailSender emailSender;
-	@Autowired
-	private CalculateReferenceRange calculateRefenceRange;
+	
+	private WKTReader reader = new WKTReader();
 
 	@Value("${spring.mail.username}")
     private String nudoorAddress;
@@ -101,15 +101,40 @@ public class PropertyService {
 
 	public SearchResponseDTO findWithinRange(final SearchParamsDTO searchParams) {
 		
-		List<Property> properties = getPropertiesFromRepo(searchParams);
+		List<Property> properties = filterListOfPropertiesFromSearchParams(searchParams);
 		
-		properties = calculateRefenceRange.getPropertiesFromReference(searchParams, properties);
+		properties = getPropertiesFromReference(searchParams, properties);
 		
 		return new SearchResponseDTO(searchParams.getReferences(), properties);
 	
 	}
 	
-	public List<Property> getPropertiesFromRepo(final SearchParamsDTO searchParams) {
+	public List<Property> getPropertiesFromReference(SearchParamsDTO searchParams, List<Property> properties) {
+
+		int index = 0;
+		
+		for (ReferenceDTO reference : searchParams.getReferences()) {
+			TimedLatLng t = tomtomClient.getReferenceLatLong(reference.getAddress());
+			searchParams.getReferences().get(index).setLatLon(t);
+			
+			Polygon polygon = tomtomClient.createPolygon(t, reference.getTime(), reference.getTransport());
+
+			properties = filterListOfPropertiesInPolygon(properties, polygon);
+			index++;
+		}
+		
+		return properties;
+	}
+	
+	
+	private List<Property> filterListOfPropertiesInPolygon(List<Property> properties, Polygon polygon) {
+		return properties.stream()
+		.filter(p -> polygon.contains(GeometryUtils.createPoint(p.getLatitude().doubleValue(),
+				p.getLongitude().doubleValue(), reader)))
+		.collect(Collectors.toList());
+	}
+	
+	public List<Property> filterListOfPropertiesFromSearchParams(final SearchParamsDTO searchParams) {
 		return propertyRepository.findAll()
 		.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
 		.filter(p -> searchParams.getCity() == null || searchParams.getCity().isEmpty() || p.getCity().equals(searchParams.getCity().split(" - ")[0]))
