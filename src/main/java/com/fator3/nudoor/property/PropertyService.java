@@ -39,11 +39,12 @@ public class PropertyService {
 	private TomtomClient tomtomClient;
 	@Autowired
     public JavaMailSender emailSender;
+	@Autowired
+	private CalculateReferenceRange calculateRefenceRange;
 
 	@Value("${spring.mail.username}")
     private String nudoorAddress;
 	
-	private WKTReader reader = new WKTReader();
 
 	private final static String[] homeTypes = {
 			"Casa",
@@ -83,8 +84,7 @@ public class PropertyService {
 	public List<TimedLatLng> findDistanceInSeconds(List<TimedLatLng> orderedReferences, final String address,
 			final String transport, final TimedLatLng reference) {
 				
-		final TimedLatLng addressLocation = reference; 
-		orderedReferences.add(addressLocation); 
+		orderedReferences.add(reference); 
 		orderedReferences = Lists.reverse(orderedReferences);
 		final RouteResponse routeResponse = tomtomClient.getRoute(orderedReferences, transport);
 		final List<Leg> legs = Iterables.getOnlyElement(routeResponse.getRoutes()).getLegs();
@@ -97,40 +97,26 @@ public class PropertyService {
 
 		return orderedReferences;
 	}
+	
 
 	public SearchResponseDTO findWithinRange(final SearchParamsDTO searchParams) {
-		List<Property> properties = propertyRepository.findAll()
-				.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
-				.filter(p -> searchParams.getCity() == null || searchParams.getCity().isEmpty() || p.getCity().equals(searchParams.getCity().split(" - ")[0]))
-				.filter(p -> searchParams.getType() == null  || searchParams.getType().isEmpty() || isPropertyType(p, searchParams.getType()))
-				.collect(Collectors.toList());
 		
-		int index = 0;
+		List<Property> properties = getPropertiesFromRepo(searchParams);
 		
-		for (ReferenceDTO reference : searchParams.getReferences()) {
-			TimedLatLng t = getReferenceLatLong(reference.getAddress());
-			searchParams.getReferences().get(index).setLatLon(t);
-
-			Point point = GeometryUtils.createPoint(t.getLatitude(), t.getLongitude(), reader);
-			ReachableRangeResponse reachableResponse = tomtomClient.getPolygonReachable(point, reference.getTime(),
-					reference.getTransport());
-
-			List<LatLng> boundaries = reachableResponse.getReachableRange().getBoundary();
-			boundaries.add(boundaries.get(0));
-
-			Polygon polygon = GeometryUtils.createPolygon(boundaries, reader);
-
-			properties = properties.stream()
-						.filter(p -> polygon.contains(GeometryUtils.createPoint(p.getLatitude().doubleValue(),
-								p.getLongitude().doubleValue(), reader)))
-						.collect(Collectors.toList());
-			index++;
-		}
+		properties = calculateRefenceRange.getPropertiesFromReference(searchParams, properties);
 		
 		return new SearchResponseDTO(searchParams.getReferences(), properties);
 	
 	}
-
+	
+	public List<Property> getPropertiesFromRepo(final SearchParamsDTO searchParams) {
+		return propertyRepository.findAll()
+		.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
+		.filter(p -> searchParams.getCity() == null || searchParams.getCity().isEmpty() || p.getCity().equals(searchParams.getCity().split(" - ")[0]))
+		.filter(p -> searchParams.getType() == null  || searchParams.getType().isEmpty() || isPropertyType(p, searchParams.getType()))
+		.collect(Collectors.toList());
+	}
+	
 	private boolean isPropertyType(Property property, String type) {
 		switch (type) {
 		case "Comercial":
@@ -144,12 +130,7 @@ public class PropertyService {
 		}
 	}
 
-	public TimedLatLng getReferenceLatLong(final String address) {
-		final GeolocationResponse result = tomtomClient.getLatLng(address);
-		final double latitude = result.getResults().get(0).getPosition().getLatitude();
-		final double longitude = result.getResults().get(0).getPosition().getLongitude();
-		return TimedLatLng.of(latitude, longitude);
-	}
+	
 
 	public List<Property> listNRandom(final Integer limit) {
 		return propertyRepository.listNRandom(limit);
