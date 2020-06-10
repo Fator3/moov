@@ -11,12 +11,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.fator3.nudoor.geometry.GeometryUtils;
 import com.fator3.nudoor.models.GeolocationResponse;
 import com.fator3.nudoor.models.LatLng;
 import com.fator3.nudoor.models.ReachableRangeResponse;
+import com.fator3.nudoor.models.ReferenceDTO;
 import com.fator3.nudoor.models.RouteResponse;
 import com.fator3.nudoor.models.TimedLatLng;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKTReader;
 
 @Component
 public class TomtomClient {
@@ -26,6 +30,8 @@ public class TomtomClient {
     @Autowired
     private RestTemplate restTemplate;
     private static String[] API_KEYS;
+    
+    private WKTReader reader = new WKTReader();
     
     @Value("${fator3.nudoor.tomtom.keys}")
     private void setAPI_KEYS(String[] keys) {
@@ -132,6 +138,19 @@ public class TomtomClient {
         logger.info("Tomtom Api: success request");
         return result.getBody();
     }
+    
+    public List<LatLng> getBoundariesFromReachableRange(ReachableRangeResponse reachableResponse) {
+		List<LatLng> boundaries = reachableResponse.getReachableRange().getBoundary();
+		boundaries.add(boundaries.get(0));
+		return boundaries;
+	}
+    
+    public ReachableRangeResponse getReachableRangeFromLatLonReference(TimedLatLng coordinates, Integer time, String transport) {
+		Point point = GeometryUtils.createPoint(coordinates.getLatitude(), coordinates.getLongitude(), reader);
+		
+		return getPolygonReachable(point, time,
+				transport);
+	}
 
     public ReachableRangeResponse getPolygonReachable(final Point location, final Integer minutes, final String transport) {
         return getPolygonReachable(location, minutes, true, transport);
@@ -175,5 +194,21 @@ public class TomtomClient {
         
 
         return result;
+    }
+    
+    public TimedLatLng getReferenceLatLong(final String address) {
+		final GeolocationResponse result = getLatLng(address);
+		final double latitude = result.getResults().get(0).getPosition().getLatitude();
+		final double longitude = result.getResults().get(0).getPosition().getLongitude();
+		return TimedLatLng.of(latitude, longitude);
+	}
+    
+    public Polygon createPolygon(TimedLatLng t, Integer time, String transport) {
+
+		ReachableRangeResponse reachableResponse = getReachableRangeFromLatLonReference(t, time, transport);
+
+		List<LatLng> boundaries = getBoundariesFromReachableRange(reachableResponse);
+		
+		return GeometryUtils.createPolygon(boundaries, reader);
     }
 }
