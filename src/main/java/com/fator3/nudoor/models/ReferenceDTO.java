@@ -1,12 +1,21 @@
 package com.fator3.nudoor.models;
 
+import com.vividsolutions.jts.geom.Polygon;
+
 public class ReferenceDTO {
 
     private String address;
     private Integer time;
     private String transport;
     private TimedLatLng latLon;
+    private Polygon reachablePolygon;
     
+	public Polygon getReachablePolygon() {
+		return reachablePolygon;
+	}
+	public void setReachablePolygon(Polygon reachablePolygon) {
+		this.reachablePolygon = reachablePolygon;
+	}
 	public TimedLatLng getLatLon() {
 		return latLon;
 	}

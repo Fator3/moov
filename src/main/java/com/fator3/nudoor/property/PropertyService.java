@@ -26,6 +26,7 @@ import com.fator3.nudoor.models.SearchResponseDTO;
 import com.fator3.nudoor.models.TimedLatLng;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
@@ -97,50 +98,42 @@ public class PropertyService {
 
 		return orderedReferences;
 	}
-	
 
-	public SearchResponseDTO findWithinRange(final SearchParamsDTO searchParams) {
+	private void createReachablePolygon (List<ReferenceDTO> references) {	
+		references.stream().forEach(r -> {
+			r.setLatLon(tomtomClient.getReferenceLatLong(r.getAddress()));
+			r.setReachablePolygon(tomtomClient.createPolygon(r.getLatLon(), r.getTime(), r.getTransport()));
+		});
+	}
+	
+	
+	public SearchResponseDTO searchProperties(final SearchParamsDTO searchParams) {
+		createReachablePolygon(searchParams.getReferences());
 		
-		List<Property> properties = filterListOfPropertiesFromSearchParams(searchParams);
-		
-		properties = getPropertiesFromReference(searchParams, properties);
+		List<Property> properties = filterProperties(propertyRepository.findAll(), searchParams);
 		
 		return new SearchResponseDTO(searchParams.getReferences(), properties);
 	
 	}
 	
-	public List<Property> getPropertiesFromReference(SearchParamsDTO searchParams, List<Property> properties) {
-
-		int index = 0;
-		
-		for (ReferenceDTO reference : searchParams.getReferences()) {
-			TimedLatLng t = tomtomClient.getReferenceLatLong(reference.getAddress());
-			searchParams.getReferences().get(index).setLatLon(t);
-			
-			Polygon polygon = tomtomClient.createPolygon(t, reference.getTime(), reference.getTransport());
-
-			properties = filterListOfPropertiesInPolygon(properties, polygon);
-			index++;
-		}
-		
-		return properties;
-	}
 	
-	
-	private List<Property> filterListOfPropertiesInPolygon(List<Property> properties, Polygon polygon) {
-		return properties.stream()
-		.filter(p -> polygon.contains(GeometryUtils.createPoint(p.getLatitude().doubleValue(),
-				p.getLongitude().doubleValue(), reader)))
-		.collect(Collectors.toList());
-	}
-	
-	public List<Property> filterListOfPropertiesFromSearchParams(final SearchParamsDTO searchParams) {
-		return propertyRepository.findAll()
-		.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
+	public List<Property> filterProperties(List<Property> properties, SearchParamsDTO searchParams){
+		return properties.stream().filter(p -> p.getLatitude() != null && p.getLongitude() != null)
 		.filter(p -> searchParams.getCity() == null || searchParams.getCity().isEmpty() || p.getCity().equals(searchParams.getCity().split(" - ")[0]))
 		.filter(p -> searchParams.getType() == null  || searchParams.getType().isEmpty() || isPropertyType(p, searchParams.getType()))
+		.filter(p -> isWithinRange(p, searchParams.getReferences()))
 		.collect(Collectors.toList());
 	}
+		
+	private boolean isWithinRange(Property prop, List<ReferenceDTO> references) {
+		return references.stream().allMatch(ref -> isWithinRange(prop, ref));
+	}
+
+	private boolean isWithinRange(Property prop, ReferenceDTO ref){		
+		return ref.getReachablePolygon().contains(GeometryUtils.createPoint(prop.getLatitude().doubleValue(),
+				prop.getLongitude().doubleValue(), reader));	
+	}
+	
 	
 	private boolean isPropertyType(Property property, String type) {
 		switch (type) {
@@ -155,7 +148,6 @@ public class PropertyService {
 		}
 	}
 
-	
 
 	public List<Property> listNRandom(final Integer limit) {
 		return propertyRepository.listNRandom(limit);

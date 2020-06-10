@@ -29,7 +29,7 @@ public class PropertyController {
     @PostMapping("/filter")
     public SearchResponseDTO filter(@RequestBody final SearchParamsDTO searchParams) {
     	
-        return propertyService.findWithinRange(searchParams);
+        return propertyService.searchProperties(searchParams);
     }
 
     @PostMapping("/time")
